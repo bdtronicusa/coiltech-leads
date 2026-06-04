@@ -1,0 +1,755 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Coiltech NA 2026 — Lead Capture</title>
+  <style>
+    :root {
+      --petrol: #006673;
+      --iceblue: #C3E1DC;
+      --red: #DC5F32;
+      --yellow: #EBAF23;
+      --berry: #A01969;
+      --lightgray: #E6E6E6;
+      --darkgray: #666666;
+      --bluegray: #4B5A64;
+      --white: #FFFFFF;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      background: var(--lightgray);
+      color: #222;
+      min-height: 100vh;
+    }
+
+    header {
+      background: var(--petrol);
+      color: var(--white);
+      padding: 16px 24px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    header .logo {
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      color: var(--iceblue);
+    }
+
+    header .event {
+      font-size: 13px;
+      color: var(--iceblue);
+      opacity: 0.85;
+    }
+
+    .container {
+      max-width: 720px;
+      margin: 24px auto;
+      padding: 0 16px 40px;
+    }
+
+    /* QR SCANNER SECTION */
+    .scan-card {
+      background: var(--white);
+      border-radius: 12px;
+      padding: 24px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      border-top: 4px solid var(--petrol);
+    }
+
+    .scan-card h2 {
+      font-size: 15px;
+      color: var(--petrol);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 14px;
+    }
+
+    .scan-area {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+    }
+
+    #video-container {
+      width: 100%;
+      max-width: 400px;
+      position: relative;
+      display: none;
+    }
+
+    #video {
+      width: 100%;
+      border-radius: 8px;
+      border: 2px solid var(--petrol);
+    }
+
+    #scan-overlay {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 60%;
+      height: 60%;
+      border: 2px solid var(--yellow);
+      border-radius: 4px;
+      pointer-events: none;
+    }
+
+    .btn {
+      padding: 11px 24px;
+      border-radius: 8px;
+      border: none;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
+    .btn:hover { opacity: 0.85; }
+    .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    .btn-primary { background: var(--petrol); color: var(--white); }
+    .btn-secondary { background: var(--bluegray); color: var(--white); }
+    .btn-danger { background: var(--red); color: var(--white); }
+    .btn-success { background: #2e7d32; color: var(--white); width: 100%; font-size: 16px; padding: 15px; }
+
+    .scan-buttons { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
+
+    #scan-status {
+      font-size: 13px;
+      color: var(--darkgray);
+      text-align: center;
+    }
+
+    /* CONTACT CARD */
+    .contact-card {
+      background: var(--iceblue);
+      border-radius: 10px;
+      padding: 16px 20px;
+      margin-bottom: 20px;
+      display: none;
+      border-left: 4px solid var(--petrol);
+    }
+
+    .contact-card h3 {
+      font-size: 18px;
+      color: var(--petrol);
+      margin-bottom: 4px;
+    }
+
+    .contact-card .company {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--bluegray);
+      margin-bottom: 12px;
+    }
+
+    .contact-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    @media (max-width: 480px) {
+      .contact-grid { grid-template-columns: 1fr; }
+    }
+
+    .contact-item {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .contact-item label {
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--darkgray);
+      font-weight: 600;
+    }
+
+    .contact-item span {
+      font-size: 13px;
+      color: #222;
+      word-break: break-all;
+    }
+
+    .contact-item.full { grid-column: 1 / -1; }
+
+    /* FORM SECTION */
+    .form-card {
+      background: var(--white);
+      border-radius: 12px;
+      padding: 24px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      border-top: 4px solid var(--yellow);
+    }
+
+    .form-card h2 {
+      font-size: 15px;
+      color: var(--petrol);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 20px;
+    }
+
+    .form-group {
+      margin-bottom: 18px;
+    }
+
+    .form-group label {
+      display: block;
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--bluegray);
+      margin-bottom: 6px;
+    }
+
+    .form-group label .required {
+      color: var(--red);
+      margin-left: 2px;
+    }
+
+    input[type="text"],
+    textarea,
+    select {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1.5px solid var(--lightgray);
+      border-radius: 7px;
+      font-size: 14px;
+      color: #222;
+      background: #fafafa;
+      transition: border-color 0.2s;
+      font-family: inherit;
+    }
+
+    input[type="text"]:focus,
+    textarea:focus,
+    select:focus {
+      outline: none;
+      border-color: var(--petrol);
+      background: var(--white);
+    }
+
+    textarea {
+      min-height: 110px;
+      resize: vertical;
+    }
+
+    /* CHIP SELECTORS */
+    .chip-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .chip {
+      padding: 7px 14px;
+      border-radius: 20px;
+      border: 1.5px solid var(--lightgray);
+      background: var(--white);
+      font-size: 13px;
+      cursor: pointer;
+      transition: all 0.15s;
+      color: var(--bluegray);
+      font-weight: 500;
+      user-select: none;
+    }
+
+    .chip:hover { border-color: var(--petrol); color: var(--petrol); }
+
+    .chip.selected {
+      background: var(--petrol);
+      border-color: var(--petrol);
+      color: var(--white);
+    }
+
+    .chip.selected.yellow { background: var(--yellow); border-color: var(--yellow); color: #222; }
+    .chip.selected.red { background: var(--red); border-color: var(--red); color: var(--white); }
+    .chip.selected.berry { background: var(--berry); border-color: var(--berry); color: var(--white); }
+
+    /* IMPORTANCE */
+    .importance-group { display: flex; gap: 10px; }
+
+    .importance-btn {
+      flex: 1;
+      padding: 12px;
+      border-radius: 8px;
+      border: 2px solid var(--lightgray);
+      background: var(--white);
+      font-size: 20px;
+      font-weight: 700;
+      cursor: pointer;
+      text-align: center;
+      transition: all 0.15s;
+      color: var(--darkgray);
+    }
+
+    .importance-btn:hover { border-color: var(--petrol); }
+    .importance-btn.selected-A { background: #2e7d32; border-color: #2e7d32; color: white; }
+    .importance-btn.selected-B { background: var(--yellow); border-color: var(--yellow); color: #222; }
+    .importance-btn.selected-C { background: var(--red); border-color: var(--red); color: white; }
+
+    /* DIVIDER */
+    .section-divider {
+      border: none;
+      border-top: 1.5px solid var(--lightgray);
+      margin: 22px 0;
+    }
+
+    /* STATUS MESSAGE */
+    #submit-status {
+      margin-top: 14px;
+      padding: 12px 16px;
+      border-radius: 8px;
+      font-size: 14px;
+      display: none;
+      text-align: center;
+      font-weight: 600;
+    }
+
+    .status-success { background: #e8f5e9; color: #2e7d32; border: 1px solid #a5d6a7; }
+    .status-error { background: #fdecea; color: #c62828; border: 1px solid #ef9a9a; }
+    .status-loading { background: #e3f2fd; color: #1565c0; border: 1px solid #90caf9; }
+
+    .reset-btn-wrap {
+      text-align: center;
+      margin-top: 12px;
+      display: none;
+    }
+
+    #canvas { display: none; }
+  </style>
+</head>
+<body>
+
+<header>
+  <div>
+    <div class="logo">bdtronic</div>
+    <div class="event">Coiltech North America 2026 — Lead Capture</div>
+  </div>
+</header>
+
+<div class="container">
+
+  <!-- QR SCANNER -->
+  <div class="scan-card">
+    <h2>📷 Step 1 — Scan Badge QR Code</h2>
+    <div class="scan-area">
+      <div id="video-container">
+        <video id="video" autoplay playsinline muted></video>
+        <div id="scan-overlay"></div>
+      </div>
+      <canvas id="canvas"></canvas>
+      <div class="scan-buttons">
+        <button class="btn btn-primary" id="btn-start-scan">Start Camera Scan</button>
+        <button class="btn btn-secondary" id="btn-stop-scan" style="display:none">Stop Camera</button>
+        <button class="btn btn-secondary" id="btn-manual">Enter Manually</button>
+      </div>
+      <div id="scan-status">Point camera at the badge QR code</div>
+    </div>
+  </div>
+
+  <!-- CONTACT DISPLAY -->
+  <div class="contact-card" id="contact-card">
+    <h3 id="disp-name">—</h3>
+    <div class="company" id="disp-company">—</div>
+    <div class="contact-grid">
+      <div class="contact-item">
+        <label>Phone</label>
+        <span id="disp-phone">—</span>
+      </div>
+      <div class="contact-item">
+        <label>Email</label>
+        <span id="disp-email">—</span>
+      </div>
+      <div class="contact-item">
+        <label>Website</label>
+        <span id="disp-url">—</span>
+      </div>
+      <div class="contact-item full">
+        <label>Address</label>
+        <span id="disp-adr">—</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- MANUAL ENTRY (hidden by default) -->
+  <div class="form-card" id="manual-card" style="display:none; margin-bottom:20px; border-top-color: var(--petrol);">
+    <h2>✏️ Manual Contact Entry</h2>
+    <div class="form-group">
+      <label>Name</label>
+      <input type="text" id="man-name" placeholder="Full name" />
+    </div>
+    <div class="form-group">
+      <label>Company</label>
+      <input type="text" id="man-company" placeholder="Company name" />
+    </div>
+    <div class="form-group">
+      <label>Phone</label>
+      <input type="text" id="man-phone" placeholder="+1 ..." />
+    </div>
+    <div class="form-group">
+      <label>Email</label>
+      <input type="text" id="man-email" placeholder="email@company.com" />
+    </div>
+    <div class="form-group">
+      <label>Website</label>
+      <input type="text" id="man-url" placeholder="https://..." />
+    </div>
+    <div class="form-group">
+      <label>Address</label>
+      <input type="text" id="man-adr" placeholder="City, State, Country" />
+    </div>
+    <button class="btn btn-primary" id="btn-apply-manual">Apply Contact Info</button>
+  </div>
+
+  <!-- BDTRONIC FORM -->
+  <div class="form-card" id="form-card">
+    <h2>📝 Step 2 — bdtronic Booth Info</h2>
+
+    <div class="form-group">
+      <label>Lead Owner <span class="required">*</span></label>
+      <input type="text" id="leadOwner" placeholder="Your name" />
+    </div>
+
+    <hr class="section-divider" />
+
+    <div class="form-group">
+      <label>Type <span class="required">*</span></label>
+      <div class="chip-group" id="chips-type">
+        <div class="chip" data-value="Customer">Customer</div>
+        <div class="chip" data-value="Potential customer">Potential Customer</div>
+        <div class="chip" data-value="Resin supplier">Resin Supplier</div>
+        <div class="chip" data-value="Supplier">Supplier</div>
+        <div class="chip" data-value="Competitor">Competitor</div>
+        <div class="chip" data-value="Partner">Partner</div>
+        <div class="chip" data-value="Research/University">Research / University</div>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label>For (Follow-up) <span class="required">*</span></label>
+      <div class="chip-group" id="chips-for">
+        <div class="chip" data-value="North America">North America</div>
+        <div class="chip" data-value="Asia">Asia</div>
+        <div class="chip" data-value="Europe">Europe</div>
+        <div class="chip" data-value="Marketing">Marketing</div>
+        <div class="chip" data-value="Other">Other</div>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label>Location <span class="required">*</span></label>
+      <div class="chip-group" id="chips-location">
+        <div class="chip" data-value="bdt booth">bdt Booth</div>
+        <div class="chip" data-value="contact booth">Contact's Booth</div>
+        <div class="chip" data-value="other">Other</div>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label>Technology Interest <span class="required">*</span></label>
+      <div class="chip-group" id="chips-technology">
+        <div class="chip" data-value="Dispensing">Dispensing</div>
+        <div class="chip" data-value="Heatstaking">Heatstaking</div>
+        <div class="chip" data-value="Impregnation">Impregnation</div>
+        <div class="chip" data-value="Plasma">Plasma</div>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label>Urgency <span class="required">*</span></label>
+      <div class="chip-group" id="chips-urgency">
+        <div class="chip yellow" data-value="Immediately">🔴 Immediately</div>
+        <div class="chip yellow" data-value="next 2-4 months">🟡 Next 2–4 Months</div>
+        <div class="chip yellow" data-value="6 months">🟢 6 Months+</div>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label>Importance <span class="required">*</span></label>
+      <div class="importance-group" id="chips-importance">
+        <button class="importance-btn" data-value="A">A<br/><small style="font-size:10px;font-weight:400">High</small></button>
+        <button class="importance-btn" data-value="B">B<br/><small style="font-size:10px;font-weight:400">Medium</small></button>
+        <button class="importance-btn" data-value="C">C<br/><small style="font-size:10px;font-weight:400">Low</small></button>
+      </div>
+    </div>
+
+    <hr class="section-divider" />
+
+    <div class="form-group">
+      <label>Notes <span class="required">*</span></label>
+      <textarea id="notes" placeholder="Describe the conversation, key topics discussed, next steps, specific requirements..."></textarea>
+    </div>
+
+    <button class="btn btn-success" id="btn-submit">✅ Submit Lead</button>
+
+    <div id="submit-status"></div>
+    <div class="reset-btn-wrap" id="reset-wrap">
+      <button class="btn btn-secondary" id="btn-reset">🔄 Scan Next Contact</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  const SHEET_URL = "https://script.google.com/macros/s/AKfycbyccIRa1xx_rC3CuuNwg2d25-jLxj-tadz0I02g8DiO89yW3CeW6SRpPiec_YZWZrxh/exec";
+
+  // --- STATE ---
+  let contactData = { name: "", company: "", phone: "", email: "", url: "", adr: "" };
+  let selections = { type: "", for: "", location: "", technology: "", urgency: "", importance: "" };
+  let scanning = false;
+  let stream = null;
+  let scanInterval = null;
+
+  // --- VCF PARSER ---
+  function parseVCF(text) {
+    const data = { name: "", company: "", phone: "", email: "", url: "", adr: "" };
+    const lines = text.split(/\r?\n/);
+    for (let line of lines) {
+      const upper = line.toUpperCase();
+      if (upper.startsWith("N:") || upper.startsWith("N;")) {
+        // Format: LastName - Company Name (we split on " - ")
+        const val = line.substring(line.indexOf(":") + 1).trim();
+        const parts = val.split(" - ");
+        data.name = parts[0].trim().replace(/;/g, " ").trim();
+        if (parts.length > 1) data.company = parts[1].trim();
+      } else if (upper.startsWith("ORG:") || upper.startsWith("ORG;")) {
+        // Only use ORG if company not already set from N field
+        if (!data.company) {
+          const val = line.substring(line.indexOf(":") + 1).trim();
+          if (!val.toLowerCase().includes("coiltech")) data.company = val;
+        }
+      } else if (upper.startsWith("TEL") ) {
+        if (!data.phone) data.phone = line.substring(line.indexOf(":") + 1).trim();
+      } else if (upper.startsWith("EMAIL")) {
+        if (!data.email) data.email = line.substring(line.indexOf(":") + 1).trim();
+      } else if (upper.startsWith("URL:") || upper.startsWith("URL;")) {
+        data.url = line.substring(line.indexOf(":") + 1).trim();
+      } else if (upper.startsWith("ADR")) {
+        const val = line.substring(line.indexOf(":") + 1).trim();
+        data.adr = val.replace(/;+/g, ", ").replace(/^,\s*/, "").replace(/,\s*,/g, ",").trim();
+      }
+    }
+    return data;
+  }
+
+  function applyContact(data) {
+    contactData = data;
+    document.getElementById("disp-name").textContent = data.name || "—";
+    document.getElementById("disp-company").textContent = data.company || "—";
+    document.getElementById("disp-phone").textContent = data.phone || "—";
+    document.getElementById("disp-email").textContent = data.email || "—";
+    document.getElementById("disp-url").textContent = data.url || "—";
+    document.getElementById("disp-adr").textContent = data.adr || "—";
+    document.getElementById("contact-card").style.display = "block";
+    document.getElementById("scan-status").textContent = "✅ Contact loaded — fill in the form below.";
+  }
+
+  // --- QR SCANNER (using jsQR) ---
+  const video = document.getElementById("video");
+  const canvas = document.getElementById("canvas");
+  const ctx = canvas.getContext("2d");
+
+  async function startScan() {
+    try {
+      stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
+      video.srcObject = stream;
+      document.getElementById("video-container").style.display = "block";
+      document.getElementById("btn-start-scan").style.display = "none";
+      document.getElementById("btn-stop-scan").style.display = "inline-block";
+      document.getElementById("scan-status").textContent = "📷 Scanning... point at the QR code on the badge.";
+      scanning = true;
+      scanInterval = setInterval(scanFrame, 300);
+    } catch (err) {
+      document.getElementById("scan-status").textContent = "⚠️ Camera access denied. Use Manual Entry instead.";
+    }
+  }
+
+  function stopScan() {
+    scanning = false;
+    clearInterval(scanInterval);
+    if (stream) { stream.getTracks().forEach(t => t.stop()); stream = null; }
+    document.getElementById("video-container").style.display = "none";
+    document.getElementById("btn-start-scan").style.display = "inline-block";
+    document.getElementById("btn-stop-scan").style.display = "none";
+  }
+
+  function scanFrame() {
+    if (!scanning || video.readyState !== video.HAVE_ENOUGH_DATA) return;
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    const code = jsQR(imageData.data, imageData.width, imageData.height);
+    if (code) {
+      const qrText = code.data;
+      if (qrText.toUpperCase().includes("BEGIN:VCARD")) {
+        stopScan();
+        const parsed = parseVCF(qrText);
+        applyContact(parsed);
+      } else {
+        document.getElementById("scan-status").textContent = "⚠️ QR found but not a VCF/vCard. Try again.";
+      }
+    }
+  }
+
+  document.getElementById("btn-start-scan").addEventListener("click", startScan);
+  document.getElementById("btn-stop-scan").addEventListener("click", stopScan);
+
+  // --- MANUAL ENTRY ---
+  document.getElementById("btn-manual").addEventListener("click", () => {
+    const mc = document.getElementById("manual-card");
+    mc.style.display = mc.style.display === "none" ? "block" : "none";
+  });
+
+  document.getElementById("btn-apply-manual").addEventListener("click", () => {
+    const data = {
+      name: document.getElementById("man-name").value.trim(),
+      company: document.getElementById("man-company").value.trim(),
+      phone: document.getElementById("man-phone").value.trim(),
+      email: document.getElementById("man-email").value.trim(),
+      url: document.getElementById("man-url").value.trim(),
+      adr: document.getElementById("man-adr").value.trim(),
+    };
+    applyContact(data);
+    document.getElementById("manual-card").style.display = "none";
+  });
+
+  // --- CHIP SELECTORS ---
+  function setupChips(groupId, key, colorClass) {
+    const group = document.getElementById(groupId);
+    group.querySelectorAll(".chip").forEach(chip => {
+      chip.addEventListener("click", () => {
+        group.querySelectorAll(".chip").forEach(c => c.classList.remove("selected", colorClass || ""));
+        chip.classList.add("selected");
+        if (colorClass) chip.classList.add(colorClass);
+        selections[key] = chip.dataset.value;
+      });
+    });
+  }
+
+  setupChips("chips-type", "type");
+  setupChips("chips-for", "for");
+  setupChips("chips-location", "location");
+  setupChips("chips-technology", "technology");
+  setupChips("chips-urgency", "urgency", "yellow");
+
+  // Importance buttons
+  document.getElementById("chips-importance").querySelectorAll(".importance-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      document.getElementById("chips-importance").querySelectorAll(".importance-btn").forEach(b => {
+        b.classList.remove("selected-A", "selected-B", "selected-C");
+      });
+      btn.classList.add("selected-" + btn.dataset.value);
+      selections.importance = btn.dataset.value;
+    });
+  });
+
+  // --- SUBMIT ---
+  document.getElementById("btn-submit").addEventListener("click", async () => {
+    const leadOwner = document.getElementById("leadOwner").value.trim();
+    const notes = document.getElementById("notes").value.trim();
+
+    // Validation
+    const missing = [];
+    if (!contactData.name && !contactData.email) missing.push("Contact (scan or manual entry)");
+    if (!leadOwner) missing.push("Lead Owner");
+    if (!selections.type) missing.push("Type");
+    if (!selections.for) missing.push("For (Follow-up)");
+    if (!selections.location) missing.push("Location");
+    if (!selections.technology) missing.push("Technology");
+    if (!selections.urgency) missing.push("Urgency");
+    if (!selections.importance) missing.push("Importance");
+    if (!notes) missing.push("Notes");
+
+    if (missing.length > 0) {
+      showStatus("error", "⚠️ Please complete: " + missing.join(", "));
+      return;
+    }
+
+    showStatus("loading", "⏳ Submitting...");
+    document.getElementById("btn-submit").disabled = true;
+
+    const payload = {
+      name: contactData.name,
+      company: contactData.company,
+      phone: contactData.phone,
+      email: contactData.email,
+      website: contactData.url,
+      address: contactData.adr,
+      leadOwner,
+      type: selections.type,
+      forFollowUp: selections.for,
+      location: selections.location,
+      technology: selections.technology,
+      urgency: selections.urgency,
+      importance: selections.importance,
+      notes
+    };
+
+    try {
+      await fetch(SHEET_URL, {
+        method: "POST",
+        mode: "no-cors",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+      showStatus("success", "✅ Lead submitted successfully! Ready for next contact.");
+      document.getElementById("reset-wrap").style.display = "block";
+      document.getElementById("btn-submit").disabled = true;
+    } catch (err) {
+      showStatus("error", "❌ Submission failed. Check your connection and try again.");
+      document.getElementById("btn-submit").disabled = false;
+    }
+  });
+
+  function showStatus(type, msg) {
+    const el = document.getElementById("submit-status");
+    el.style.display = "block";
+    el.className = "status-" + type;
+    el.textContent = msg;
+  }
+
+  // --- RESET ---
+  document.getElementById("btn-reset").addEventListener("click", () => {
+    contactData = { name: "", company: "", phone: "", email: "", url: "", adr: "" };
+    selections = { type: "", for: "", location: "", technology: "", urgency: "", importance: "" };
+
+    document.getElementById("contact-card").style.display = "none";
+    document.getElementById("scan-status").textContent = "Point camera at the badge QR code";
+    document.getElementById("leadOwner").value = "";
+    document.getElementById("notes").value = "";
+    document.getElementById("man-name").value = "";
+    document.getElementById("man-company").value = "";
+    document.getElementById("man-phone").value = "";
+    document.getElementById("man-email").value = "";
+    document.getElementById("man-url").value = "";
+    document.getElementById("man-adr").value = "";
+
+    document.querySelectorAll(".chip.selected").forEach(c => c.classList.remove("selected", "yellow", "red", "berry"));
+    document.querySelectorAll(".importance-btn").forEach(b => b.classList.remove("selected-A", "selected-B", "selected-C"));
+
+    document.getElementById("submit-status").style.display = "none";
+    document.getElementById("reset-wrap").style.display = "none";
+    document.getElementById("btn-submit").disabled = false;
+  });
+</script>
+
+<!-- jsQR for QR decoding -->
+<script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
+
+</body>
+</html>
